@@ -1,5 +1,24 @@
+# === ROS 2 Build Artifacts ===
 build/
 install/
 log/
-*.pyc
+
+# === Python Cache Files ===
 __pycache__/
+*.py[cod]
+*.so
+
+# === Colcon meta files ===
+.colcon/
+
+# === VSCode and IDE files ===
+.vscode/
+.idea/
+
+# === Miscellaneous ===
+*.swp
+*.bak
+*.tmp
+*.DS_Store
+.env
+
