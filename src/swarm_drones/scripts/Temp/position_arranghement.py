@@ -1,28 +1,5 @@
-import pygame
-import math
 from pymavlink import mavutil
-
-
-
-# === CONFIGURATION === #
-CELL_SIZE = 80
-GAP = 10
-FONT_SIZE = 24
-BUTTON_HEIGHT = 40
-MAX_SELECTIONS = 5
-AUTO_PLAY_INTERVAL_MS = 500
-
-WHITE = (255, 255, 255)
-GRAY = (210, 210, 210)
-BLACK = (0, 0, 0)
-YELLOW = (255, 255, 100)
-BLUE = (50, 100, 255)
-GREEN = (50, 200, 50)
-RED = (200, 50, 50)
-ORANGE = (255, 165, 0)
-# FONT = pygame.font.SysFont(None, FONT_SIZE)
-pygame.init()
-FONT = pygame.font.SysFont(None, FONT_SIZE)
+import math
 
 
 
@@ -30,107 +7,6 @@ class logger():
     def info(string_dat):
         print(string_dat)
 
-# === GRID SELECTOR === #
-class GridSelector:
-    def __init__(self, grid_size, x_offset, y_offset, max_selections=5):
-        self.grid_size = grid_size
-        self.x_offset = x_offset
-        self.y_offset = y_offset
-        self.max_selections = max_selections
-        self.selected = []
-        self.locked = False
-
-    def draw(self, surface):
-        for row in range(self.grid_size):
-            for col in range(self.grid_size):
-                x = self.x_offset + GAP + col * (CELL_SIZE + GAP)
-                y = self.y_offset + GAP + row * (CELL_SIZE + GAP)
-                rect = pygame.Rect(x, y, CELL_SIZE, CELL_SIZE)
-                pygame.draw.rect(surface, GRAY, rect)
-
-                if (col, row) in self.selected:
-                    pygame.draw.rect(surface, YELLOW, rect.inflate(-10, -10))
-
-                pygame.draw.rect(surface, BLACK, rect, 2)
-
-    def handle_click(self, mouse_pos):
-        if self.locked:
-            return
-
-        mx, my = mouse_pos
-        for row in range(self.grid_size):
-            for col in range(self.grid_size):
-                x = self.x_offset + GAP + col * (CELL_SIZE + GAP)
-                y = self.y_offset + GAP + row * (CELL_SIZE + GAP)
-                rect = pygame.Rect(x, y, CELL_SIZE, CELL_SIZE)
-                if rect.collidepoint(mx, my):
-                    pos = (col, row)
-                    if pos in self.selected:
-                        self.selected.remove(pos)
-                    elif len(self.selected) < self.max_selections:
-                        self.selected.append(pos)
-                    return
-
-    def reset(self):
-        self.selected = []
-        self.locked = False
-
-    def lock(self):
-        self.locked = True
-
-    def get_selected(self):
-        return list(self.selected)
-
-
-# === COMMAND GENERATOR === #
-class DroneAssignmentEngine:
-    def __init__(self, grid_size):
-        self.grid_size = grid_size
-        self.drone_start_positions = {
-            "D1": (0, 0),
-            "D2": (0, 1),
-            "D3": (0, 2),
-            "D4": (0, 3),
-            "D5": (0, 4),
-        }
-
-    def generate_commands(self, selected_cells):
-        commands = []
-        drone_available = set(self.drone_start_positions.keys())
-
-        # Group by y row (from bottom to top)
-        selected_by_row = {}
-        for x, y in selected_cells:
-            selected_by_row.setdefault(y, []).append((x, y))
-
-        for y in sorted(selected_by_row.keys(), reverse=True):
-            for x, _ in sorted(selected_by_row[y]):
-                assigned = False
-                for drone_id in sorted(self.drone_start_positions):
-                    if (
-                        self.drone_start_positions[drone_id] == (0, x)
-                        and drone_id in drone_available
-                    ):
-                        commands.append((drone_id, x, y))
-                        drone_available.remove(drone_id)
-                        assigned = True
-                        break
-
-                if not assigned:
-                    nearest_drone = None
-                    nearest_distance = float("inf")
-                    for drone_id in drone_available:
-                        dx = self.drone_start_positions[drone_id][1]
-                        dist = abs(dx - x)
-                        if dist < nearest_distance:
-                            nearest_distance = dist
-                            nearest_drone = drone_id
-
-                    if nearest_drone:
-                        drone_available.remove(nearest_drone)
-                        commands.append((nearest_drone, x, 0))
-                        commands.append((nearest_drone, x, y))
-        return commands
 
 
 class swarm_drone:
@@ -281,61 +157,89 @@ class swarm_drone:
             return True
         return False
 
-# Drone0 = swarm_drone(0)
-# Drone1 = swarm_drone(1)
-# Drone2 = swarm_drone(2)
-# Drone3 = swarm_drone(3)
-# Drone4 = swarm_drone(4)
-
-Swarm_drones = []
-for i in range (0,5):
-    Swarm_drones.append(swarm_drone(i))
-Location_initial = []
-for i in range (0,5):
-    Location_initial.append(Swarm_drones[i].get_lan_lon())
-
-# Drone_list = [Drone0, Drone1, Drone2, Drone3, Drone4]
 
 
-
-# origin = location0
-# print(Drone0.latlon_to_meters(location0,location1))
-
-# print(Drone0.meters_to_latlon_offset(location0, (2,0)))
-# print(Drone0.latlon_to_meters(location0[0],location0[1], location1[0], location1[1]))
-
-# origin_location = Drone0.get_lat_lon()
-
-# cmds = [(3, 2, 4),
-# (2, 2, 0),
-# (2, 2, 3),
-# (1, 1, 0),
-# (1, 1, 2),
-# (4, 3, 2),
-# (5, 2, 0),
-# (5, 2, 1)]
-
-# cmds = [(0,(5,0))]
-# for command in cmds:
-#     print()
-#     target_location = Drone0.meters_to_latlon_offset(location0, (-command[2], command[1]))
-#     Drone_list[command[0]].set_position_target_global_int(target_location)
-#     var = input()
-        
-# target_location = Drone0.meters_to_latlon_offset(location0, cmds[0][1])
-# print(location0, target_location)
-# Drone_list[cmds[0][0]].set_position_target_global_int(target_location)
+class DroneAssignmentEngine:
+    def __init__(self, initial_formation):
+        self.drone_avail = initial_formation
     
+    def nearest_avail(self, index):
+        j = 0
+        while True:
+            p1 = index-j
+            p2 = index + j
+            if p2 < len(self.drone_avail) and self.drone_avail[p2] == 1:
+                return p2
+            elif p1 >= 0 and self.drone_avail[p1] == 1:
+                return p1
+            elif p1 < 0 and p2 >= len(self.drone_avail):
+                return
+            j = j + 1
 
-# for swarm in Drone_list:
-#     swarm.set_guided_mode()
+    def generate_command(self, required_position):
+        command_list = []
+        drone_to_send = self.nearest_avail(required_position[0])
+        if drone_to_send == required_position[0]:
+                command_list.append([drone_to_send,required_position])
+                self.drone_avail[drone_to_send] = 0
+        else:
+                command_list.append([drone_to_send, [required_position[0],0]])
+                command_list.append([drone_to_send, [required_position[0], required_position[1]]])
+                self.drone_avail[drone_to_send] = 0
+        return command_list
 
-# var = input("Pass")
+    def generate_command_list(self, required_position_list,size):
+    
+        command_list = []
+        j = size
+        print(required_position_list)
+        while j>= 0:
+            i = size
+            while i >=0:
+                print(i,j)
+                if (i,j) in required_position_list:
+                    cmds = self.generate_command((i,j))
+                    for cmd in cmds:
+                        command_list.append(cmd)
+                i = i -1
+            j = j - 1
+        return command_list
 
-# for swarm in Drone_list:
-#     swarm.arm_throttle()
-#     swarm.takeoff_to_altitude()
-#     var = input("pass")
+class x_y_to_lat_long:
+    def __init__(self, start_location, end_location,size):
+        self.x00_y00 = start_location
+        self.xn0_yn0 = end_location
+        self.x0n_y0n = (self.x00_y00[0] - self.x00_y00[1]- self.xn0_yn0[1], self.x00_y00[1]- self.xn0_yn0[0] + self.x00_y00[0])
+        self.xnn_ynn = (self.xn0_yn0[0] - self.x00_y00[1]- self.xn0_yn0[1], self.xn0_yn0[1]- self.xn0_yn0[0] + self.x00_y00[0])
+        self.n = size - 1
+    def divide_by_location_t(self,locat1,locat2,t_ratio):
+        x = locat1[0] + t_ratio * (locat2[0]-locat1[0])
+        y = locat1[1] + t_ratio * (locat2[1]-locat1[1])
+        return (x,y)
+        
+    def get_lat_lon(self, pos):
+        ratio_x = pos[0]/self.n
+        ratio_y = pos[1]/self.n
+        pt1 = self.divide_by_location_t(self.x00_y00, self.xn0_yn0,ratio_x)
+        pt2 = self.divide_by_location_t(self.x0n_y0n,self.xnn_ynn, ratio_x)
+        
+        return self.divide_by_location_t(pt1,pt2,ratio_y)
+    def print_corners(self):
+        print(self.x00_y00,self.xn0_yn0,self.x0n_y0n,self.xnn_ynn)
+engine = DroneAssignmentEngine([1,1,1,1,1])
 
 
+x_y_1 = x_y_to_lat_long((20,30),(60,30),5)
 
+x_y_1.print_corners()
+
+# print(engine.nearest_avail(1))
+
+# print(engine.generate_command_list( [(1, 2), (2, 2), (3, 2), (2, 1), (2, 3)],5))
+
+
+# aa = [(1, 2), (2, 2), (3, 2), (2, 1), (2, 3)]
+
+
+# if (1,2) in aa :
+#     print(True)

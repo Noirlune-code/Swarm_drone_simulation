@@ -193,10 +193,10 @@ def main():
     engine = DroneAssignmentEngine(grid_size, start_positions)
 
     buttons = [
-        Button(200, button_height, (50, 100, 255), (gap, screen_height - 4 * (button_height + panel_margin)), "Lock Configuration", font, (255, 255, 255)),
-        Button(200, button_height, (255, 165, 0), (gap, screen_height - 3 * (button_height + panel_margin)), "Process Configuration", font, (255, 255, 255)),
-        Button(200, button_height, (50, 200, 50), (gap, screen_height - 2 * (button_height + panel_margin)), "Make Formation", font, (255, 255, 255)),
-        Button(200, button_height, (200, 50, 50), (gap, screen_height - 1 * (button_height + panel_margin)), "Reset", font, (255, 255, 255)),
+        Button(200, button_height, (50, 100, 255), (gap, screen_height - 4 * (button_height + panel_margin)), "Lock Configuration", font, (255, 255, 255),continuous_mode=False),
+        Button(200, button_height, (255, 165, 0), (gap, screen_height - 3 * (button_height + panel_margin)), "Process Configuration", font, (255, 255, 255),continuous_mode=False),
+        Button(200, button_height, (50, 200, 50), (gap, screen_height - 2 * (button_height + panel_margin)), "Make Formation", font, (255, 255, 255),continuous_mode=False),
+        Button(200, button_height, (200, 50, 50), (gap, screen_height - 1 * (button_height + panel_margin)), "Reset", font, (255, 255, 255),continuous_mode=False),
     ]
 
     clock = pygame.time.Clock()
