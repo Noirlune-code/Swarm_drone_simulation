@@ -105,7 +105,7 @@ class JoystickListener(Node):
         self.left = self.right = 0.0
         self.guided = self.arm = self.takeoff = self.land = 0.0
 
-        self.swarm_drones = [swarm_drone(0,self),swarm_drone(1,self),swarm_drone(2, self)]
+        self.swarm_drones = [swarm_drone(0,self),swarm_drone(1,self),swarm_drone(2, self),swarm_drone(3,self), swarm_drone(4,self)]
 
         # Subscriber
         self.subscription = self.create_subscription(
@@ -128,7 +128,7 @@ class JoystickListener(Node):
         (
         self.x, self.y,
         self.height, self.yaw,
-        self.guided, self.arm, self.takeoff, self.land
+        self.guided, self.arm, self.takeoff, self.land,
         ) = data
 
     def mode_control_loop(self):
